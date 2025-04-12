@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { fetchAssets, Clip } from '../api/clips';
 import { Board } from '../api/boards';
 import { AutoSizer, CellMeasurer, CellMeasurerCache, List } from 'react-virtualized';
@@ -92,13 +92,13 @@ export default function ClientBoardsAndAssets({
         )
     };
 
-    const handleScroll = ({ clientHeight, scrollHeight, scrollTop }: { clientHeight: number, scrollHeight: number, scrollTop: number }) => {
+    const handleScroll = useCallback(({ clientHeight, scrollHeight, scrollTop }: { clientHeight: number, scrollHeight: number, scrollTop: number }) => {
         if (scrollHeight - scrollTop - clientHeight < ROW_HEIGHT * 2 && !isLoading) {
             loadMoreAssets();
         }
-    }
+    }, [isLoading, loadMoreAssets]);
 
-    const rowCount = Math.ceil(assets.length / GRID_COLUMN_COUNT) + 1; // +1 for boards row
+    const rowCount = useMemo(() => Math.ceil(assets.length / GRID_COLUMN_COUNT) + 1, [assets]); // +1 for boards row
 
     return (
         <div className="h-screen w-full overflow-y-auto overflow-x-hidden">
