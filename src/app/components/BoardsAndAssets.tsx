@@ -13,6 +13,9 @@ import "react-virtualized/styles.css";
 import LoadingIndicator from "./LoadingIndicator";
 import { MeasuredCellParent } from "react-virtualized/dist/es/CellMeasurer";
 import CollapsibleSection from "./CollapsibleSection";
+import ImageAsset from "./ImageAsset";
+import BoardThumbnail from "./BoardThumbnail";
+import VideoAsset from "./VideoAsset";
 
 interface ClientBoardsAndAssetsProps {
   initialAssets: Clip[];
@@ -197,23 +200,7 @@ const BoardsRow = ({
           >
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
               {boardsRow.map((board) => (
-                <div
-                  key={board.id}
-                  className="relative aspect-square rounded-lg overflow-hidden group cursor-pointer"
-                >
-                  {board.thumbnails?.[0] && (
-                    <img
-                      src={board.thumbnails[0]}
-                      alt={board.title}
-                      className="w-full h-full object-cover"
-                    />
-                  )}
-                  <div className="absolute inset-0 bg-black bg-opacity-40 flex items-end p-4">
-                    <h3 className="text-white text-lg font-medium">
-                      {board.title}
-                    </h3>
-                  </div>
-                </div>
+                <BoardThumbnail key={board.id} board={board} />
               ))}
             </div>
           </CollapsibleSection>
@@ -270,38 +257,13 @@ const AssetsRow = ({
             setIsOpen={setIsOpen}
           >
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-              {rowAssets.map((asset) => (
-                <div
-                  key={asset.id}
-                  className="relative aspect-square rounded-lg overflow-hidden group cursor-pointer"
-                >
-                  {asset.type === "video" ? (
-                    <div className="relative w-full h-full">
-                      {asset.assets.image && (
-                        <img
-                          src={asset.assets.image}
-                          alt={asset.title || "Video thumbnail"}
-                          className="w-full h-full object-cover"
-                        />
-                      )}
-                      {asset.duration && (
-                        <div className="absolute bottom-2 right-2 bg-black bg-opacity-75 px-1 py-0.5 rounded text-xs text-white">
-                          {formatDuration(asset.duration)}
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    asset.assets.image && (
-                      <img
-                        src={asset.assets.image}
-                        alt={asset.title || "Asset"}
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                      />
-                    )
-                  )}
-                </div>
-              ))}
+              {rowAssets.map((asset) =>
+                asset.type === "video" ? (
+                  <VideoAsset asset={asset} />
+                ) : (
+                  <ImageAsset asset={asset} />
+                ),
+              )}
             </div>
           </CollapsibleSection>
         </div>
