@@ -124,6 +124,7 @@ export default function ClientBoardsAndAssets({
                                                     src={asset.assets.image}
                                                     alt={asset.title || 'Video thumbnail'}
                                                     className="w-full h-full object-cover"
+                                                    loading="lazy"
                                                 />
                                             )}
                                             {asset.duration && (
@@ -148,7 +149,7 @@ export default function ClientBoardsAndAssets({
                     </div>
                 )
                 }
-            </CellMeasurer >
+            </CellMeasurer>
         );
     };
 
