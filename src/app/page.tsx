@@ -1,6 +1,6 @@
 import { fetchBoards } from './api/boards';
 import { fetchAssets } from './api/clips';
-import ClientBoardsAndAssets from './components/ClientBoardsAndAssets';
+import BoardsAndAssets from './components/BoardsAndAssets';
 
 export default async function Home() {
 
@@ -19,7 +19,7 @@ export default async function Home() {
 
   return (
     <main>
-      <ClientBoardsAndAssets
+      <BoardsAndAssets
         initialAssets={assets}
         initialAssetCursor={assetCursor}
         initialHasMoreAssets={hasMoreAssets}

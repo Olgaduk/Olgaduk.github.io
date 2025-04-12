@@ -7,6 +7,7 @@ import { AutoSizer, CellMeasurer, CellMeasurerCache, List } from 'react-virtuali
 import 'react-virtualized/styles.css';
 import LoadingIndicator from './LoadingIndicator';
 import { MeasuredCellParent } from 'react-virtualized/dist/es/CellMeasurer';
+import CollapsibleSection from './CollapsibleSection';
 
 interface ClientBoardsAndAssetsProps {
     initialAssets: Clip[];
@@ -17,7 +18,7 @@ interface ClientBoardsAndAssetsProps {
 }
 
 const cache = new CellMeasurerCache({
-    defaultHeight: 50,
+    defaultHeight: 250,
     fixedWidth: true
 });
 
@@ -35,6 +36,8 @@ export default function ClientBoardsAndAssets({
     const [assetCursor, setAssetCursor] = useState<string | null>(initialAssetCursor);
     const [hasMoreAssets, setHasMoreAssets] = useState(initialHasMoreAssets);
     const [isLoading, setIsLoading] = useState(false);
+
+    const [isAssetsOpen, setIsAssetsOpen] = useState(true);
 
     const loadMoreAssets = useCallback(async () => {
         if (!assetCursor || !hasMoreAssets || isLoading) return;
@@ -61,59 +64,116 @@ export default function ClientBoardsAndAssets({
         // First row is boards
         if (index === 0) {
             return (
-                <CellMeasurer
-                    cache={cache}
-                    columnIndex={0}
+                <BoardsRow
+                    boardsRow={boards}
+                    index={index}
                     key={key}
+                    style={style}
                     parent={parent}
-                    rowIndex={index}>
-                    {({ measure, registerChild }) => (
-                        <div style={style} ref={registerChild} onLoad={measure} className="px-10 pt-10">
-                            <h2 className="text-sm font-medium text-gray-700 mb-4">BOARDS ({boards.length})</h2>
-                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                                {boards.map((board) => (
-                                    <div key={board.id} className="relative aspect-square rounded-lg overflow-hidden group cursor-pointer">
-                                        {board.thumbnails?.[0] && (
-                                            <img
-                                                src={board.thumbnails[0]}
-                                                alt={board.title}
-                                                className="w-full h-full object-cover"
-                                            />
-                                        )}
-                                        <div className="absolute inset-0 bg-black bg-opacity-40 flex items-end p-4">
-                                            <h3 className="text-white text-lg font-medium">{board.title}</h3>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-                </CellMeasurer>
-            );
+                />
+            )
         }
 
         // Calculate which assets to show in this row
         const startIdx = (index - 1) * GRID_COLUMN_COUNT;
         const rowAssets = assets.slice(startIdx, startIdx + GRID_COLUMN_COUNT);
 
-        if (rowAssets.length === 0) {
-            if (hasMoreAssets && !isLoading) {
-                loadMoreAssets();
-            }
-            return null;
-        }
-
         return (
-            <CellMeasurer
-                cache={cache}
-                columnIndex={0}
+            <AssetsRow
+                isOpen={isAssetsOpen}
+                setIsOpen={setIsAssetsOpen}
+                totalAssets={totalAssets}
+                index={index}
                 key={key}
+                style={style}
                 parent={parent}
-                rowIndex={index}>
-                {({ measure, registerChild }) => (
-                    <div style={style} ref={registerChild} onLoad={measure} className="px-10 py-2">
-                        {index === 1 && <h2 className="text-sm font-medium text-gray-700 pt-10 mb-4">ASSETS ({totalAssets})</h2>}
+                rowAssets={rowAssets}
+            />
+        )
+    };
 
+    const handleScroll = ({ clientHeight, scrollHeight, scrollTop }: { clientHeight: number, scrollHeight: number, scrollTop: number }) => {
+        if (scrollHeight - scrollTop - clientHeight < ROW_HEIGHT * 2 && !isLoading) {
+            loadMoreAssets();
+        }
+    }
+
+    const rowCount = Math.ceil(assets.length / GRID_COLUMN_COUNT) + 1; // +1 for boards row
+
+    return (
+        <div className="h-screen w-full overflow-y-auto overflow-x-hidden">
+            <AutoSizer>
+                {({ width, height }) => (
+                    <List
+                        width={width}
+                        deferredMeasurementCache={cache}
+                        rowHeight={cache.rowHeight}
+                        height={height}
+                        rowCount={rowCount}
+                        rowRenderer={renderRow}
+                        onScroll={handleScroll}
+                    />
+                )}
+            </AutoSizer>
+
+            {isLoading && <LoadingIndicator />}
+        </div>
+    );
+}
+
+const BoardsRow = ({ index, key, style, parent, boardsRow }: { index: number; key: string; style: React.CSSProperties, parent: MeasuredCellParent, boardsRow: Board[] }) => {
+    const [isOpen, setIsOpen] = useState(true);
+
+    return (
+        <CellMeasurer
+            cache={cache}
+            columnIndex={0}
+            key={key}
+            parent={parent}
+            rowIndex={index}>
+            {({ measure, registerChild }) => (
+                <div style={style} ref={registerChild} onLoad={measure} className="px-10 pt-10">
+                    <CollapsibleSection title={`Boards (${boardsRow.length})`} isVisible={true} isOpen={isOpen} setIsOpen={setIsOpen}>
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                            {boardsRow.map((board) => (
+                                <div key={board.id} className="relative aspect-square rounded-lg overflow-hidden group cursor-pointer">
+                                    {board.thumbnails?.[0] && (
+                                        <img
+                                            src={board.thumbnails[0]}
+                                            alt={board.title}
+                                            className="w-full h-full object-cover"
+                                        />
+                                    )}
+                                    <div className="absolute inset-0 bg-black bg-opacity-40 flex items-end p-4">
+                                        <h3 className="text-white text-lg font-medium">{board.title}</h3>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </CollapsibleSection>
+                </div>
+            )}
+        </CellMeasurer>
+    )
+}
+
+const AssetsRow = ({ index, key, style, parent, rowAssets, totalAssets, isOpen, setIsOpen }: { index: number; key: string; style: React.CSSProperties, parent: MeasuredCellParent, rowAssets: Clip[], totalAssets: number, isOpen: boolean, setIsOpen: (isOpen: boolean) => void }) => {
+    const formatDuration = (duration: number) => {
+        const minutes = Math.floor(duration / 60);
+        const seconds = Math.floor(duration % 60);
+        return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    };
+
+    return (
+        <CellMeasurer
+            cache={cache}
+            columnIndex={0}
+            key={key}
+            parent={parent}
+            rowIndex={index}>
+            {({ measure, registerChild }) => (
+                <div style={style} ref={registerChild} onLoad={measure} className="px-10 py-2">
+                    <CollapsibleSection title={`Assets (${totalAssets})`} isVisible={index === 1} isOpen={isOpen} setIsOpen={setIsOpen}>
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                             {rowAssets.map((asset) => (
                                 <div key={asset.id} className="relative aspect-square rounded-lg overflow-hidden group cursor-pointer">
@@ -124,7 +184,6 @@ export default function ClientBoardsAndAssets({
                                                     src={asset.assets.image}
                                                     alt={asset.title || 'Video thumbnail'}
                                                     className="w-full h-full object-cover"
-                                                    loading="lazy"
                                                 />
                                             )}
                                             {asset.duration && (
@@ -146,36 +205,10 @@ export default function ClientBoardsAndAssets({
                                 </div>
                             ))}
                         </div>
-                    </div>
-                )
-                }
-            </CellMeasurer>
-        );
-    };
-
-    const rowCount = Math.ceil(assets.length / GRID_COLUMN_COUNT) + 1; // +1 for boards row
-
-    return (
-        <div className="h-screen w-full overflow-y-auto overflow-x-hidden">
-            <AutoSizer>
-                {({ width, height }) => (
-                    <List
-                        width={width}
-                        deferredMeasurementCache={cache}
-                        rowHeight={cache.rowHeight}
-                        height={height}
-                        rowCount={rowCount}
-                        rowRenderer={renderRow}
-                        onScroll={({ clientHeight, scrollHeight, scrollTop }) => {
-                            if (scrollHeight - scrollTop - clientHeight < ROW_HEIGHT * 2) {
-                                loadMoreAssets();
-                            }
-                        }}
-                    />
-                )}
-            </AutoSizer>
-
-            {isLoading && <LoadingIndicator />}
-        </div>
-    );
-} 
+                    </CollapsibleSection>
+                </div>
+            )
+            }
+        </CellMeasurer>
+    )
+}
