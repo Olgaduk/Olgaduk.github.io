@@ -93,7 +93,7 @@ export default function ClientBoardsAndAssets({
     };
 
     const handleScroll = useCallback(({ clientHeight, scrollHeight, scrollTop }: { clientHeight: number, scrollHeight: number, scrollTop: number }) => {
-        if (scrollHeight - scrollTop - clientHeight < ROW_HEIGHT * 2 && !isLoading) {
+        if (scrollHeight - scrollTop - clientHeight < ROW_HEIGHT * 5 && !isLoading) {
             loadMoreAssets();
         }
     }, [isLoading, loadMoreAssets]);
