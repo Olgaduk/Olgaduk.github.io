@@ -1,29 +1,37 @@
+import { useState } from "react";
 import { Clip } from "../api/clips";
-import { ROW_HEIGHT } from "../constants";
+import { getAssetDimensions } from "../utils";
 
 export default function ImageAsset({ asset }: { asset: Clip }) {
-  const width = asset.width;
-  const height = asset.height;
+  const [isHovered, setIsHovered] = useState(false);
 
-  const aspectRatio = width / height;
-
-  const assetHeight = ROW_HEIGHT;
-  const assetWidth = assetHeight * aspectRatio;
+  const { width: assetWidth, height: assetHeight } = getAssetDimensions(asset);
 
   return (
-    <div className={`relative overflow-hidden rounded-lg cursor-pointer`}>
-      {asset.assets.image && (
-        <img
-          src={asset.assets.image}
-          alt={asset.title}
-          className="object-cover"
-          loading="lazy"
-          width={assetWidth}
-          height={assetHeight}
-        />
-      )}
-      <div className="absolute inset-0 bg-black bg-opacity-40 flex items-end p-4">
-        <h3 className="text-white text-lg font-medium">{asset.title}</h3>
+    <div
+      className={`overflow-hidden rounded-sm cursor-pointer p-2 ${isHovered ? "bg-black/10" : ""} transition-border-color duration-200`}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <div className={`relative w-[${assetWidth}px] h-[${assetHeight}px]`}>
+        {asset.assets.image && (
+          <img
+            src={asset.assets.image}
+            alt={asset.title}
+            className="object-cover rounded-sm"
+            loading="lazy"
+            width={assetWidth}
+            height={assetHeight}
+          />
+        )}
+
+        {isHovered && (
+          <div className="absolute inset-0 bg-gradient-linear from-black/0 from-50% to-black/60 flex items-end p-4">
+            <h3 className="text-white text-lg font-medium text-ellipsis overflow-hidden whitespace-nowrap">
+              {asset.assets.image}
+            </h3>
+          </div>
+        )}
       </div>
     </div>
   );
