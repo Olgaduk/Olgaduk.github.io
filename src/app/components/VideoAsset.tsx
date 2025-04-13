@@ -36,6 +36,7 @@ export default function VideoAsset({ asset }: { asset: Clip }) {
             className="object-cover rounded-sm"
             width={assetWidth}
             height={assetHeight}
+            muted
           />
         )}
 

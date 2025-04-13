@@ -9,7 +9,7 @@ export default function ImageAsset({ asset }: { asset: Clip }) {
 
   return (
     <div
-      className={`overflow-hidden rounded-sm cursor-pointer p-2 ${isHovered ? "bg-black/10" : ""} transition-border-color duration-200`}
+      className={`overflow-hidden rounded-sm cursor-pointer p-2 ${isHovered ? "bg-black/10" : ""} transition-border-color duration-200 basis-[${assetWidth}px]`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
