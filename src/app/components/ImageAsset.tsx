@@ -1,16 +1,25 @@
 import { Clip } from "../api/clips";
+import { ROW_HEIGHT } from "../constants";
 
 export default function ImageAsset({ asset }: { asset: Clip }) {
+  const width = asset.width;
+  const height = asset.height;
+
+  const aspectRatio = width / height;
+
+  const assetHeight = ROW_HEIGHT;
+  const assetWidth = assetHeight * aspectRatio;
+
   return (
-    <div className="relative aspect-square rounded-lg overflow-hidden group cursor-pointer">
+    <div className={`relative overflow-hidden rounded-lg cursor-pointer`}>
       {asset.assets.image && (
         <img
           src={asset.assets.image}
           alt={asset.title}
-          className="w-full h-full object-cover"
+          className="object-cover"
           loading="lazy"
-          width={asset.width}
-          height={asset.height}
+          width={assetWidth}
+          height={assetHeight}
         />
       )}
       <div className="absolute inset-0 bg-black bg-opacity-40 flex items-end p-4">

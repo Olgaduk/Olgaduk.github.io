@@ -1,8 +1,17 @@
 import { useRef } from "react";
 import { Clip } from "../api/clips";
+import { ROW_HEIGHT } from "../constants";
 
 export default function VideoAsset({ asset }: { asset: Clip }) {
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  const width = asset.width;
+  const height = asset.height;
+
+  const aspectRatio = width / height;
+
+  const assetHeight = ROW_HEIGHT;
+  const assetWidth = assetHeight * aspectRatio;
 
   const formatDuration = (duration: number) => {
     const minutes = Math.floor(duration / 60);
@@ -20,18 +29,18 @@ export default function VideoAsset({ asset }: { asset: Clip }) {
 
   return (
     <div
-      className="relative aspect-square rounded-lg overflow-hidden group cursor-pointer"
+      className={`relative overflow-hidden rounded-lg cursor-pointer flex-shrink-0 basis-[${assetWidth}px]`}
       onMouseOver={handleMouseOver}
       onMouseOut={handleMouseOut}
     >
-      <div className="relative w-full h-full">
+      <div className={`w-[${assetWidth}px] h-[${assetHeight}px]`}>
         {asset.assets.previewVideo && (
           <video
             ref={videoRef}
             src={asset.assets.previewVideo}
-            className="w-full h-full object-cover"
-            width={asset.width}
-            height={asset.height}
+            className="object-cover"
+            width={assetWidth}
+            height={assetHeight}
           />
         )}
         {asset.duration && (

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo, useEffect } from "react";
 import { fetchAssets, Clip } from "../api/clips";
 import { Board } from "../api/boards";
 import {
@@ -16,6 +16,7 @@ import CollapsibleSection from "./CollapsibleSection";
 import ImageAsset from "./ImageAsset";
 import BoardThumbnail from "./BoardThumbnail";
 import VideoAsset from "./VideoAsset";
+import { GRID_COLUMN_COUNT, ROW_HEIGHT } from "../constants";
 
 interface ClientBoardsAndAssetsProps {
   initialAssets: Clip[];
@@ -29,9 +30,6 @@ const cache = new CellMeasurerCache({
   defaultHeight: 250,
   fixedWidth: true,
 });
-
-const GRID_COLUMN_COUNT = 5;
-const ROW_HEIGHT = 250;
 
 export default function ClientBoardsAndAssets({
   initialAssets,
@@ -92,10 +90,6 @@ export default function ClientBoardsAndAssets({
         );
       }
 
-      // Calculate which assets to show in this row
-      const startIdx = (index - 1) * GRID_COLUMN_COUNT;
-      const rowAssets = assets.slice(startIdx, startIdx + GRID_COLUMN_COUNT);
-
       return (
         <AssetsRow
           isOpen={isAssetsOpen}
@@ -105,7 +99,7 @@ export default function ClientBoardsAndAssets({
           key={key}
           style={style}
           parent={parent}
-          rowAssets={rowAssets}
+          assets={assets}
         />
       );
     },
@@ -215,7 +209,7 @@ const AssetsRow = ({
   key,
   style,
   parent,
-  rowAssets,
+  assets,
   totalAssets,
   isOpen,
   setIsOpen,
@@ -224,16 +218,14 @@ const AssetsRow = ({
   key: string;
   style: React.CSSProperties;
   parent: MeasuredCellParent;
-  rowAssets: Clip[];
+  assets: Clip[];
   totalAssets: number;
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
 }) => {
-  const formatDuration = (duration: number) => {
-    const minutes = Math.floor(duration / 60);
-    const seconds = Math.floor(duration % 60);
-    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
-  };
+  // Calculate which assets to show in this row
+  const startIdx = (index - 1) * GRID_COLUMN_COUNT;
+  const rowAssets = assets.slice(startIdx, startIdx + GRID_COLUMN_COUNT);
 
   return (
     <CellMeasurer
@@ -248,7 +240,7 @@ const AssetsRow = ({
           style={style}
           ref={registerChild}
           onLoad={measure}
-          className="px-10 py-2"
+          className="px-10 py-1"
         >
           <CollapsibleSection
             title={`Assets (${totalAssets})`}
@@ -256,12 +248,12 @@ const AssetsRow = ({
             isOpen={isOpen}
             setIsOpen={setIsOpen}
           >
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            <div className="flex gap-4 justify-between">
               {rowAssets.map((asset) =>
                 asset.type === "video" ? (
-                  <VideoAsset asset={asset} />
+                  <VideoAsset key={asset.id} asset={asset} />
                 ) : (
-                  <ImageAsset asset={asset} />
+                  <ImageAsset key={asset.id} asset={asset} />
                 ),
               )}
             </div>
