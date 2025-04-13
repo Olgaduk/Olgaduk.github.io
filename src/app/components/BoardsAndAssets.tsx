@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo, useRef } from "react";
 import { fetchAssets, Clip } from "../api/clips";
 import { Board } from "../api/boards";
 import {
@@ -16,7 +16,8 @@ import CollapsibleSection from "./CollapsibleSection";
 import ImageAsset from "./ImageAsset";
 import BoardThumbnail from "./BoardThumbnail";
 import VideoAsset from "./VideoAsset";
-import { GRID_COLUMN_COUNT, ROW_HEIGHT } from "../constants";
+import { DEFAULT_COLUMNS_COUNT, ROW_HEIGHT } from "../constants";
+import { calculateColumnsForWidth } from "../utils";
 
 interface ClientBoardsAndAssetsProps {
   initialAssets: Clip[];
@@ -48,6 +49,8 @@ export default function ClientBoardsAndAssets({
   const [isAssetsOpen, setIsAssetsOpen] = useState(true);
   const [isBoardsOpen, setIsBoardsOpen] = useState(true);
 
+  const prevColumnsCountRef = useRef<number>(DEFAULT_COLUMNS_COUNT);
+
   const loadMoreAssets = useCallback(async () => {
     if (!assetCursor || !hasMoreAssets || isLoading) return;
 
@@ -62,6 +65,23 @@ export default function ClientBoardsAndAssets({
     }
     setIsLoading(false);
   }, [assetCursor, hasMoreAssets, isLoading]);
+
+  // Calculate which assets to show in this row
+  const getRowAssets = useCallback(
+    (index: number) => {
+      const startIdx = (index - 1) * prevColumnsCountRef.current;
+
+      const currentColumnsCount = calculateColumnsForWidth(
+        assets,
+        startIdx,
+        window.innerWidth,
+      );
+      prevColumnsCountRef.current = currentColumnsCount;
+
+      return assets.slice(startIdx, startIdx + currentColumnsCount);
+    },
+    [assets.length],
+  );
 
   const renderRow = useCallback(
     ({
@@ -90,6 +110,8 @@ export default function ClientBoardsAndAssets({
         );
       }
 
+      const rowAssets = getRowAssets(index);
+
       return (
         <AssetsRow
           isOpen={isAssetsOpen}
@@ -99,7 +121,7 @@ export default function ClientBoardsAndAssets({
           key={key}
           style={style}
           parent={parent}
-          assets={assets}
+          rowAssets={rowAssets}
         />
       );
     },
@@ -127,7 +149,7 @@ export default function ClientBoardsAndAssets({
   );
 
   const rowCount = useMemo(
-    () => Math.ceil(assets.length / GRID_COLUMN_COUNT) + 1,
+    () => Math.ceil(assets.length / DEFAULT_COLUMNS_COUNT) + 1,
     [assets],
   ); // +1 for boards row
 
@@ -145,6 +167,7 @@ export default function ClientBoardsAndAssets({
             rowCount={rowCount}
             rowRenderer={renderRow}
             onScroll={handleScroll}
+            /* force re-render when boards or assets are toggled */
             key={`${isBoardsOpen}-${isAssetsOpen}`}
           />
         )}
@@ -210,7 +233,7 @@ const AssetsRow = ({
   key,
   style,
   parent,
-  assets,
+  rowAssets,
   totalAssets,
   isOpen,
   setIsOpen,
@@ -219,15 +242,11 @@ const AssetsRow = ({
   key: string;
   style: React.CSSProperties;
   parent: MeasuredCellParent;
-  assets: Clip[];
+  rowAssets: Clip[];
   totalAssets: number;
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
 }) => {
-  // Calculate which assets to show in this row
-  const startIdx = (index - 1) * GRID_COLUMN_COUNT;
-  const rowAssets = assets.slice(startIdx, startIdx + GRID_COLUMN_COUNT);
-
   return (
     <CellMeasurer
       cache={cache}

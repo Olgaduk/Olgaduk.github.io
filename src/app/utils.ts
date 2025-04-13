@@ -1,5 +1,5 @@
 import { Clip } from "./api/clips";
-import { GRID_COLUMN_COUNT, ROW_HEIGHT } from "./constants";
+import { DEFAULT_COLUMNS_COUNT, ROW_HEIGHT } from "./constants";
 
 export const getAssetDimensions = (asset: Clip) => {
   const { width, height } = asset;
@@ -13,8 +13,8 @@ export const getAssetDimensions = (asset: Clip) => {
 export function calculateColumnsForWidth(
   assets: Clip[],
   startIdx: number,
+  availableWidth: number,
 ): number {
-  const availableWidth = window.innerWidth;
   let currentWidth = 0;
   let columns = 0;
   let index = startIdx;
@@ -30,5 +30,5 @@ export function calculateColumnsForWidth(
     index++;
   }
 
-  return Math.min(columns, GRID_COLUMN_COUNT);
+  return Math.min(columns, DEFAULT_COLUMNS_COUNT);
 }
