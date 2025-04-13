@@ -15,18 +15,20 @@ export default function VideoAsset({ asset }: { asset: Clip }) {
   };
 
   const handleMouseOver = () => {
+    setIsHovered(true);
     videoRef.current?.play();
   };
 
   const handleMouseOut = () => {
+    setIsHovered(false);
     videoRef.current?.pause();
   };
 
   return (
     <div
       className={`relative p-2 overflow-hidden rounded-lg cursor-pointer flex-shrink-0 basis-[${assetWidth}px] ${isHovered ? "bg-black/10" : ""} transition-border-color duration-200`}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      onMouseEnter={handleMouseOver}
+      onMouseLeave={handleMouseOut}
     >
       <div className={`relative w-[${assetWidth}px] h-[${assetHeight}px]`}>
         {asset.assets.previewVideo && (
