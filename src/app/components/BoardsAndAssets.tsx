@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useMemo, useEffect } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import { fetchAssets, Clip } from "../api/clips";
 import { Board } from "../api/boards";
 import {
@@ -145,6 +145,7 @@ export default function ClientBoardsAndAssets({
             rowCount={rowCount}
             rowRenderer={renderRow}
             onScroll={handleScroll}
+            key={`${isBoardsOpen}-${isAssetsOpen}`}
           />
         )}
       </AutoSizer>
