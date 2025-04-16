@@ -87,7 +87,8 @@ export default function ClientBoardsAndAssets({
             }
 
             const startIdx = startAssetsIndex + (rowColumnsCount[startAssetsIndex - 1]?.totalColumns ?? 0);
-            const endIdx = startAssetsIndex + (rowColumnsCount[startAssetsIndex]?.totalColumns ?? 0);
+            // slice is exclusive of the endIdx
+            const endIdx = startAssetsIndex + (rowColumnsCount[startAssetsIndex]?.totalColumns ?? 0) + 1;
 
             return assets.slice(startIdx, endIdx);
         },
