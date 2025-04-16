@@ -2,12 +2,12 @@ import { Board } from "../api/boards";
 
 export default function BoardThumbnail({ board }: { board: Board }) {
   return (
-    <div className="relative aspect-square rounded-lg overflow-hidden group cursor-pointer">
+    <div className="relative flex-1 aspect-square rounded-sm overflow-hidden group cursor-pointer">
       {board.thumbnails?.[0] && (
         <img
           src={board.thumbnails[0]}
           alt={board.title}
-          className="w-full h-full object-cover"
+          className="object-cover"
           loading="lazy"
         />
       )}

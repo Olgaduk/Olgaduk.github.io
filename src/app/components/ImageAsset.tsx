@@ -5,7 +5,7 @@ import { getAssetDimensions } from "../utils";
 export default function ImageAsset({ asset }: { asset: Clip }) {
   const [isHovered, setIsHovered] = useState(false);
 
-  const { width: assetWidth, height: assetHeight } = getAssetDimensions(asset);
+  const { width: assetWidth } = getAssetDimensions(asset);
 
   return (
     <div
@@ -13,7 +13,7 @@ export default function ImageAsset({ asset }: { asset: Clip }) {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <div className={`relative w-[${assetWidth}px] h-[${assetHeight}px]`}>
+      <div className={`relative w-[${assetWidth}px]`}>
         {asset.assets.image && (
           <img
             src={asset.assets.image}
@@ -21,7 +21,6 @@ export default function ImageAsset({ asset }: { asset: Clip }) {
             className="object-cover rounded-sm"
             loading="lazy"
             width={assetWidth}
-            height={assetHeight}
           />
         )}
 
