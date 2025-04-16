@@ -27,12 +27,17 @@ interface ClientBoardsAndAssetsProps {
     boards: Board[];
 }
 
+interface RowColumnsData {
+    columnsPerRow: number;
+    totalColumns: number;
+}
+
 const cache = new CellMeasurerCache({
     defaultHeight: 250,
     fixedWidth: true,
 });
 
-const rowColumnsCount: Record<number, number> = {};
+const rowColumnsCount: Record<number, RowColumnsData> = {};
 
 export default function ClientBoardsAndAssets({
     initialAssets,
@@ -70,18 +75,30 @@ export default function ClientBoardsAndAssets({
     const getRowAssets = useCallback(
         (index: number) => {
             const startAssetsIndex = index - 3;
-            const startIdx = startAssetsIndex * DEFAULT_COLUMNS_COUNT;
+            const columnsCount = rowColumnsCount[startAssetsIndex]?.columnsPerRow ?? calculateColumnsForWidth(assets, startAssetsIndex, window.innerWidth);
 
-            return assets.slice(startIdx, startIdx + DEFAULT_COLUMNS_COUNT);
+            if (!rowColumnsCount[startAssetsIndex]) {
+                const totalColumns = rowColumnsCount[startAssetsIndex - 1]?.totalColumns ? columnsCount + rowColumnsCount[startAssetsIndex - 1]?.totalColumns : columnsCount;
+
+                rowColumnsCount[startAssetsIndex] = {
+                    columnsPerRow: columnsCount,
+                    totalColumns,
+                };
+            }
+
+            const startIdx = startAssetsIndex + (rowColumnsCount[startAssetsIndex - 1]?.totalColumns ?? 0);
+            const endIdx = startAssetsIndex + (rowColumnsCount[startAssetsIndex]?.totalColumns ?? 0);
+
+            return assets.slice(startIdx, endIdx);
         },
         [assets.length],
     );
 
-    const toggleBoards = useCallback(() => {
+    const toggleBoardsSection = useCallback(() => {
         setIsBoardsOpen((prev) => !prev);
     }, [isBoardsOpen]);
 
-    const toggleAssets = useCallback(() => {
+    const toggleAssetsSection = useCallback(() => {
         setIsAssetsOpen((prev) => !prev);
     }, [isAssetsOpen]);
 
@@ -108,7 +125,7 @@ export default function ClientBoardsAndAssets({
                             >
                                 <CollapsibleSectionButton
                                     title={`Boards (${boards.length})`}
-                                    onClick={toggleBoards}
+                                    onClick={toggleBoardsSection}
                                 />
                             </div>
                         )}
@@ -160,7 +177,7 @@ export default function ClientBoardsAndAssets({
                             >
                                 <CollapsibleSectionButton
                                     title={`Assets (${totalAssets})`}
-                                    onClick={toggleAssets}
+                                    onClick={toggleAssetsSection}
                                 />
                             </div>
                         )}

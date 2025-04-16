@@ -5,21 +5,22 @@ import { getAssetDimensions } from "../utils";
 export default function ImageAsset({ asset }: { asset: Clip }) {
   const [isHovered, setIsHovered] = useState(false);
 
-  const { width: assetWidth } = getAssetDimensions(asset);
+  const { height: assetHeight, width: assetWidth } = getAssetDimensions(asset);
 
   return (
     <div
-      className={`overflow-hidden rounded-sm cursor-pointer p-2 ${isHovered ? "bg-black/10" : ""} transition-border-color duration-200 basis-[${assetWidth}px]`}
+      className={`overflow-hidden rounded-sm cursor-pointer p-2 ${isHovered ? "bg-black/10" : ""} transition-border-color duration-200`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <div className={`relative w-[${assetWidth}px]`}>
+      <div className={`relative flex-1`}>
         {asset.assets.image && (
           <img
             src={asset.assets.image}
             alt={asset.title}
             className="object-cover rounded-sm"
             loading="lazy"
+            height={assetHeight}
             width={assetWidth}
           />
         )}

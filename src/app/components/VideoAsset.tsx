@@ -6,7 +6,7 @@ export default function VideoAsset({ asset }: { asset: Clip }) {
   const [isHovered, setIsHovered] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  const { width: assetWidth } = getAssetDimensions(asset);
+  const { height: assetHeight, width: assetWidth } = getAssetDimensions(asset);
 
   const formatDuration = (duration: number) => {
     const minutes = Math.floor(duration / 60);
@@ -26,18 +26,19 @@ export default function VideoAsset({ asset }: { asset: Clip }) {
 
   return (
     <div
-      className={`relative p-2 overflow-hidden rounded-lg cursor-pointer flex-shrink-0 basis-[${assetWidth}px] ${isHovered ? "bg-black/10" : ""} transition-border-color duration-200`}
+      className={`relative p-2 overflow-hidden rounded-lg cursor-pointer ${isHovered ? "bg-black/10" : ""} transition-border-color duration-200`}
       onMouseEnter={handleMouseOver}
       onMouseLeave={handleMouseOut}
     >
-      <div className={`relative w-[${assetWidth}px]`}>
+      <div className={`relative flex-1 h-[${assetHeight}px]`}>
         {asset.assets.previewVideo && (
           <video
             ref={videoRef}
             src={asset.assets.previewVideo}
-            className="object-cover rounded-sm"
-            width={assetWidth}
+            className="object-cover rounded-sm basis-[${assetWidth}px]"
             muted
+            width={assetWidth}
+            height={assetHeight}
           />
         )}
 
